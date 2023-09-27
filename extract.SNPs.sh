@@ -40,6 +40,14 @@ for i in "$EXTRACTED_DIR"/*extracted; do
     grep -v "^#" "$i" | cut -f 1 | sort | uniq -c > "$SNPCHR_DIR"/$(basename "$i").SNPchr
 done
 
+# Create the BED file with IDs
+bcftools query -f '%CHROM\t%POS0\t%END\t%ID\n' panel.SNPs.vcf > panel.SNPs.vcf.ids.bed
+
+# Annotate the file
+for i in "$EXTRACTED_DIR"/*extracted; do 
+    bcftools annotate -c CHROM,FROM,TO,ID -a panel.SNPs.vcf.ids.bed -o "${i%.extracted}.IDs.vcf" "$i"
+done
+
 # Example Loop using vcftools
 # Define out path
 OUT="/path/to/vcftools_output"
@@ -52,3 +60,4 @@ for i in "$VCF_DIR"/burn5_snps.vcf.gz; do
     vcftools --gzvcf "$i" --missing-site --out "$OUT"/$(basename "$i").site.missing
     vcftools --gzvcf "$i" --relatedness --out "$OUT"/$(basename "$i").relatedness
 done
+
